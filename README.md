@@ -12,16 +12,19 @@ First, install Docker.
 - `sudo systemctl enable docker.service`
 - You might need to restart the docker service/relogin your user account.
 
-Download manage.py (the other files in this repo aren't needed) and try the following commands (on Windows use `python3 manage.py` instead of `./manage.py`):
-
-**Start**: `./manage.py start`  
-**Stop**: `./manage.py stop`  
-**Connect**: `psql -h localhost -p 5432 -U dev_user -d dev_db`
-
-Now, you want to build our container. Please note that you only need to build it once!
-The tag is customized for our image, so make sure you copy the code below for correctness.
+Download the repository and do the following:
+First, you want to build our container. Please note that you only need to build it once!
+The default tag we created is `postgres-image` for the image. Build using the command below.
 
 **Build**: `docker build -t postgres-image .`
+
+Below are the commands to start, stop, and connect to the container. On Windows use either `python3 manage.py` or `manage.py` instead of `./manage.py`:
+
+**Start**: `./manage.py --start`  
+**Stop**: `./manage.py --kill`  
+**Connect**: `docker exec -it pg_docker psql -h localhost -p 5432 -U dev_user -d dev_db`
+
+The default password we have created is `dev`
 
 ## Summary
 This Dockerfile specifies a container that builds upon the default "postgres" container in Docker Hub.
