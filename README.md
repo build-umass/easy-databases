@@ -6,7 +6,12 @@ Anyways, download manage.py (the other files in this repo aren't needed) and try
 
 **Start**: `./manage.py start`  
 **Stop**: `./manage.py stop`  
-**Connect**: `psql -h localhost -p 5432 -U dev_user -d dev_db`
+**Connect/Manage**:
+```
+docker exec -it <container name, default = pg_docker> bash
+// you are now inside the container
+psql -h localhost -p 5432 -U dev_user -d dev_db
+```
 
 manage.py requires Docker to be installed. Search online to learn how to install Docker on your OS.
 
@@ -25,7 +30,7 @@ The resulting container lets developers easily use Postgres on their local machi
 This container should not be used in production because it has hardcoded users/passwords to make setup easier and to establish convention.
 
 ## Usage
-The Postgres database in this container has the following roles/databases:
+The Postgres database in this container will be initialized with the following roles/databases:
 - Admin
     - Username: admin_user
     - Password: admin
@@ -57,6 +62,8 @@ Therefor, the recommended procedure is to:
 You can theoretically have multiple volumes, each with different files. When you want to run a given Postgres instance, start the container and bind it to a given volume.
 
 ### Commands
+`manage.py` just runs these commands with good defaults.
+
 **Create and Start Container From Image**: `docker run --rm --volume PGDATA:/var/lib/postgresql/data -d --name pg_docker -p 5432:5432 --ip localhost <image id>`
 - `--rm` Remove this container after it is stopped (for example, with `docker stop <container name/hash>`). Restarting the database will require running the original command again instead of merely running `docker start <container name/hash>`
 - `--volume PGDATA:/var/lib/postgresql/data` Bind the Docker volume "PGDATA" to the directory `/var/...` in the container. If the volume "PGDATA" does not exist, create it.
