@@ -20,6 +20,7 @@ Download manage.py (the other files in this repo aren't needed) and try the foll
 
 Now, you want to build our container. Please note that you only need to build it once!
 The tag is customized for our image, so make sure you copy the code below for correctness.
+
 **Build**: `docker build -t postgres-image .`
 
 ## Summary
