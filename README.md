@@ -30,7 +30,7 @@ The resulting container lets developers easily use Postgres on their local machi
 This container should not be used in production because it has hardcoded users/passwords to make setup easier and to establish convention.
 
 ## Usage
-The Postgres database in this container has the following roles/databases:
+The Postgres database in this container will be initialized with the following roles/databases:
 - Admin
     - Username: admin_user
     - Password: admin
