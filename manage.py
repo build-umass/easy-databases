@@ -9,7 +9,7 @@ parser.add_argument('-s', '--start', action='store_true', help='Start the Postgr
 parser.add_argument('-k', '--kill', action='store_true', help='Stop the Postgres container')
 parser.add_argument('-v', '--volume=', action='store', dest='volume', help='The Docker volume /var/lib/postgresql/data should be bound to', default='PGDATA')
 parser.add_argument('-n', '--name=', action='store', dest='name', help='The name of the Docker container', default='pg_docker')
-parser.add_argument('-i', '--image=', action='store', dest='image', help='The image for instantiating the Docker container.', default='vedantroy/easy-umass-postgres')
+parser.add_argument('-i', '--image=', action='store', dest='image', help='The image for instantiating the Docker container.', default='postgres-image:latest')
 
 args = parser.parse_args()
 
