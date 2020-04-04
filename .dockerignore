@@ -1,9 +1,0 @@
-# Ignore version control files:
-.git/
-.gitignore
-
-# Ignore docker file:
-**/*Dockerfile
-
-# Ignore OS artifacts:
-**/.DS_Store
