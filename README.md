@@ -2,7 +2,18 @@
 ## Quick Setup
 **It is recommended you read the entire README.** Reading it won't take that long, and you will get useful information that will make developing faster in the future.
 
-First, install Docker.
+Anyways, download manage.py (the other files in this repo aren't needed) and try the following commands (on Windows use `python3 manage.py` instead of `./manage.py`):
+
+**Start**: `./manage.py start`  
+**Stop**: `./manage.py stop`  
+**Connect/Manage**:
+```
+docker exec -it <container name, default = pg_docker> bash
+// you are now inside the container
+psql -h localhost -p 5432 -U dev_user -d dev_db
+```
+
+manage.py requires Docker to be installed. Search online to learn how to install Docker on your OS.
 
 **Helpful Commands/Stuff for Installing Docker on Linux**:
 - Install Docker with your package manager
@@ -11,18 +22,6 @@ First, install Docker.
 - `sudo systemctl start docker.service`
 - `sudo systemctl enable docker.service`
 - You might need to restart the docker service/relogin your user account.
-
-Download manage.py (the other files in this repo aren't needed) and try the following commands (on Windows use `python3 manage.py` instead of `./manage.py`):
-
-**Start**: `./manage.py start`  
-**Stop**: `./manage.py stop`  
-**Connect**: `psql -h localhost -p 5432 -U dev_user -d dev_db`
-
-Now, you want to build our container. Please note that you only need to build it once!
-The tag is customized for our image, so make sure you copy the code below for correctness.
-
-**Build**: `docker build -t postgres-image .`
-
 ## Summary
 This Dockerfile specifies a container that builds upon the default "postgres" container in Docker Hub.
 
@@ -31,7 +30,7 @@ The resulting container lets developers easily use Postgres on their local machi
 This container should not be used in production because it has hardcoded users/passwords to make setup easier and to establish convention.
 
 ## Usage
-The Postgres database in this container has the following roles/databases:
+The Postgres database in this container will be initialized with the following roles/databases:
 - Admin
     - Username: admin_user
     - Password: admin
@@ -63,14 +62,16 @@ Therefor, the recommended procedure is to:
 You can theoretically have multiple volumes, each with different files. When you want to run a given Postgres instance, start the container and bind it to a given volume.
 
 ### Commands
-**Create and Start Container From Image**: `docker run --rm --volume PGDATA:/var/lib/postgresql/data -d --name pg_docker -p 5432:5432 --ip localhost <image tag>`
+`manage.py` just runs these commands with good defaults.
+
+**Create and Start Container From Image**: `docker run --rm --volume PGDATA:/var/lib/postgresql/data -d --name pg_docker -p 5432:5432 --ip localhost <image id>`
 - `--rm` Remove this container after it is stopped (for example, with `docker stop <container name/hash>`). Restarting the database will require running the original command again instead of merely running `docker start <container name/hash>`
 - `--volume PGDATA:/var/lib/postgresql/data` Bind the Docker volume "PGDATA" to the directory `/var/...` in the container. If the volume "PGDATA" does not exist, create it.
 - `-d` Run container in background and print container ID.
 - `--name pg_docker` Give the container a name, so you can use commands, like `docker stop` without having to use the container id.
 - `-p 5432:5432` Bind port 5432 on the host to port 5432 on the container, which is the default port that Postgres listens on. The syntax is HOST_PORT:CONTAINER_PORT
 - `-- ip localhost` Set the container's ip address to localhost. By default, it is 0.0.0.0. Thus, programs can connect to the Postgres database at `localhost:5432` instead of `0.0.0.0:5432`.
-- `<image tag>` The unique tag of that will identify the container.
+- `<image id>` The id of the Docker image that this Container will be constructed/instantiated from.
 
 **Connect to the Postgres Database**: `psql -h localhost -p 5432 -U dev_user -d dev_db`
 - `-p 5432` This flag is optional since by default psql will use port 5432.
