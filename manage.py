@@ -9,11 +9,12 @@ parser.add_argument('-n', '--name=', action='store', dest='name', help='The name
 parser.add_argument('-i', '--image=', action='store', dest='image', help='The image for instantiating the Docker container.', default=None)
 subparsers = parser.add_subparsers(dest = 'sub')
 build = subparsers.add_parser('build')
-build.add_argument('build_choice', choices=['mongo', 'postgres'], help='Building the image')
+selection = ['mongo','postgres']
+build.add_argument('build_choice', choices=selection, help='Building the image')
 start = subparsers.add_parser('start')
-start.add_argument('start_choice', choices=['mongo', 'postgres'], help='Start the container')
+start.add_argument('start_choice', choices=selection, help='Start the container')
 stop = subparsers.add_parser('stop')
-stop.add_argument('stop_choice', choices=['mongo', 'postgres'], help='Stop the container')
+stop.add_argument('stop_choice', choices=selection, help='Stop the container')
 args = parser.parse_args()
 
 if which('docker') is None:
@@ -33,31 +34,31 @@ def easy_exec(cmd):
     print(f"Error executing command. The process returned {retval}.")
   return retval == 0
 
-def build(loc):
-  print("Building image with tag: image-name")
+def build_image(image_tag, location):
+  print(f"Building image with tag: {image_tag}")
   if args.name:
     print("Warning: irrelevant flag -n/--name")
   if args.volume:
     print("Warning: irrevlant flag -v/--volume")
   if args.image:
     print("warning: irrelevant flag -i/--image")
-  cmd = f"docker build -t image-name ./" + loc
+  cmd = f"docker build -t {image_tag} ./{location}"
   easy_exec(cmd)
 
-def start(nm, vol, img, dbroute, port):
+def start(name, volume, image, volume_location, port_binding):
   if args.name is None:
-    args.name = nm
+    args.name = name
   if args.volume is None:
-    args.volume = vol
+    args.volume = volume
   if args.image is None:
-    args.image = img
+    args.image = image
   print(f"Starting docker container with volume: {args.volume} and name: {args.name}")
-  cmd = f"docker run --rm --volume {args.volume}:" + dbroute + f" -d --name {args.name} -p " + port + f" --ip localhost {args.image}"
+  cmd = f"docker run --rm --volume {args.volume}:{volume_location} -d --name {args.name} -p {port_binding} --ip localhost {args.image}"
   easy_exec(cmd)
 
-def stop(nm):
+def stop(name):
   if args.name is None:
-    args.name = nm
+    args.name = name
   print(f"Stopping docker container with name {args.name}")
   if args.volume:
     print("Warning: irrelevant flag -v/--volume")
@@ -68,14 +69,14 @@ def stop(nm):
 
 if args.sub == 'build':
   if args.build_choice == 'mongo':
-    build(f"mongo")
+    build_image("mongo-image", "mongo")
   elif args.build_choice == 'postgres':
-    build(f"postgres")    
+    build_image("postgres-image", "postgres")    
 elif args.sub == 'start':
   if args.start_choice == 'mongo':
-    start("mongo_docker", "mongo-volume", f"image-name:latest", f"/data/db", f"27017:27017")
+    start("mongo_docker", "mongo-volume", "mongo-image:latest", "/data/db", "27017:27017")
   elif args.start_choice == 'postgres':
-    start("pg_docker", "PGDATA", f"image-name:latest", f"/var/lib/postgresql/data", f"5432:5432")
+    start("pg_docker", "PGDATA", "postgres-image:latest", "/var/lib/postgresql/data", "5432:5432")
 elif args.sub == 'stop':
   if args.stop_choice == 'mongo':
     stop("mongo_docker")
