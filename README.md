@@ -1,19 +1,51 @@
 # Easy Postgres With Docker [WIP]
 ## Quick Setup
-**It is recommended you read the entire README.** Reading it won't take that long, and you will get useful information that will make developing faster in the future.
+**It is recommended you read the entire README.** 
 
-Anyways, download manage.py (the other files in this repo aren't needed) and try the following commands (on Windows use `python3 manage.py` instead of `./manage.py`):
+Download the entire repository. If you intend to use only postgres, you may delete the mongo folder. If you intend to use only mongo, you may delete the postgres folder.
 
-**Start**: `./manage.py start`  
-**Stop**: `./manage.py stop`  
+The repo offers the following commands (on Windows use `python3 manage.py` instead of `./manage.py`).
+
+
+## For PostgreSQL:
+
+**Build**: `./manage.py build postgres`
+
+**Start**: `./manage.py start postgres` 
+
+**Stop**: `./manage.py stop postgres`
+
 **Connect/Manage**:
 ```
 docker exec -it <container name, default = pg_docker> bash
 // you are now inside the container
 psql -h localhost -p 5432 -U dev_user -d dev_db
+//inside psql shell
 ```
 
-manage.py requires Docker to be installed. Search online to learn how to install Docker on your OS.
+## For MongoDB:
+
+**Build**: `./manage.py build mongo`
+
+**Start**: `./manage.py start mongo` 
+
+**Stop**: `./manage.py stop mongo`
+
+**Connect/Manage**:
+```
+docker exec -it <container name, default = mongo_docker> bash
+// you are now inside the container
+mongo
+//inside mongo shell
+use <insert database name>
+//switch to other db
+db.auth(<username>, <password>)
+//authenticate for access privileges
+```
+
+## Other/Misc:
+
+manage.py requires Docker to be installed. Visit the Docker website for installation information.
 
 **Helpful Commands/Stuff for Installing Docker on Linux**:
 - Install Docker with your package manager
@@ -22,66 +54,60 @@ manage.py requires Docker to be installed. Search online to learn how to install
 - `sudo systemctl start docker.service`
 - `sudo systemctl enable docker.service`
 - You might need to restart the docker service/relogin your user account.
-## Summary
-This Dockerfile specifies a container that builds upon the default "postgres" container in Docker Hub.
+# Summary
 
-The resulting container lets developers easily use Postgres on their local machines while developing without having to install Postgres the normal way.
+## Top
+
+This Dockerfile specifies an image to which the container is built upon.
+
+The resulting container lets developers easily use Postgres/Mongo on their local machines while developing without having to install Postgres/Mongo the normal way.
 
 This container should not be used in production because it has hardcoded users/passwords to make setup easier and to establish convention.
 
 ## Usage
-The Postgres database in this container will be initialized with the following roles/databases:
+
+Building the images from the Dockerfiles that we have setup makes it easier for you to use Docker. After the images are built, you can immediately start working with the databases that are created within the container.
+
+Please note that an image only has to be built once (only have to run `./manage.py build <mongo/postgres>` once).
+
+Both databases in this container will be initialized with the following roles/databases:
 - Admin
+    - DB: admin_db
     - Username: admin_user
     - Password: admin
 - Normal
+    - DB: dev_db
     - Username: dev_user
     - Password: dev
 
-There are 2 databases in the Postgres instance:
-- admin_db
-- dev_db
-
 Developers should use the user "dev_user" and the database "dev_db".
 
-Normally, the Postgres admin user is "postgres" and the default database is "postgres".
-Thus, this container breaks convention. However, by making the roles more explicit, there should be less confusion overall.
+Data is not persistent inside of containers. Think of a container as a template (like a class). Starting a container merely creates an instance of that class. Stopping a container deletes the instance. Thus, the state of your database must be stored inside of a Docker volume.
 
-Data is not persistent inside of containers. Think of a container as a template (like a class). Starting a container merely creates an instance of that class. Stopping a container deletes the instance. Thus, the state of your Postgres database must be stored inside of a Docker volume.
+**For Postgres:**
 
-Postgres uses a folder called PGDATA to store all relevant information. PGDATA equals "/var/lib/postgresql/data" on Linux. Thus, to persist the state of the Postgres instance, a Docker volume must be bound to the location of PGDATA.
+In the container, Postgres uses a folder "/var/lib/postgresql/data" to store all the data that is created in this container for later use (i.e. after we stop the container, and start it again), we must have to create a location on our local machine that is able to retain such data. Hence, we have to bind a location on our local machine, to that directory in the container. Thankfully, Docker has an option to do this for us, by managing the database files on our local machine. Instead of binding a specific directory, Docker will mount a volume for us.
 
-- If the user does not provide a volume the container will create an empty volume and bind it to PGDATA. Initialization scripts will be run, making the volume non-empty. This volume can be found with `docker volume ls`.
-- If the user binds an empty volume to PGDATA, initialization scripts will run, making the volume non-empty.
-- If the user binds a non-empty volume to PGDATA, no initialization scripts will run since the database state will be inside PGDATA.
+- If the user does not provide a volume the container will create an empty volume named PGDATA and bind it to /var/lib/postgresql/data. Initialization scripts will be run, making the volume non-empty. This volume can be found with `docker volume ls`.
+- If the user binds an empty volume, initialization scripts will run, making the volume non-empty.
+- If the user binds a non-empty volume, no initialization scripts will run since the database state will be inside that volume.
 
 Therefor, the recommended procedure is to:
-1. Start the container with an empty volume, *V*, bound to PGDATA. Initialization will occur and *V* will be used as a PGDATA folder.
-2. In the future, when you want to use your database again, restart the container with PGDATA bound to *V*, which stores the state of your database.
+1. Start the container with an empty volume, *V* (default case would be PGDATA), bound to "/var/lib/postgresql/data". Initialization will occur and  will be used as a folder to which data is stored.
+2. In the future, when you want to use your database again, restart the container with "/var/lib/postgresql/data" bound to *V*, which stores the state of your database.
 
 You can theoretically have multiple volumes, each with different files. When you want to run a given Postgres instance, start the container and bind it to a given volume.
 
-### Commands
-`manage.py` just runs these commands with good defaults.
+**For MongoDB:**
 
-**Create and Start Container From Image**: `docker run --rm --volume PGDATA:/var/lib/postgresql/data -d --name pg_docker -p 5432:5432 --ip localhost <image id>`
-- `--rm` Remove this container after it is stopped (for example, with `docker stop <container name/hash>`). Restarting the database will require running the original command again instead of merely running `docker start <container name/hash>`
-- `--volume PGDATA:/var/lib/postgresql/data` Bind the Docker volume "PGDATA" to the directory `/var/...` in the container. If the volume "PGDATA" does not exist, create it.
-- `-d` Run container in background and print container ID.
-- `--name pg_docker` Give the container a name, so you can use commands, like `docker stop` without having to use the container id.
-- `-p 5432:5432` Bind port 5432 on the host to port 5432 on the container, which is the default port that Postgres listens on. The syntax is HOST_PORT:CONTAINER_PORT
-- `-- ip localhost` Set the container's ip address to localhost. By default, it is 0.0.0.0. Thus, programs can connect to the Postgres database at `localhost:5432` instead of `0.0.0.0:5432`.
-- `<image id>` The id of the Docker image that this Container will be constructed/instantiated from.
+In the container, Mongo uses a folder "/db/data" to store all the data that is created in this container for later use (i.e. after we stop the container, and start it again), we must have to create a location on our local machine that is able to retain such data. Hence, we have to bind a location on our local machine, to that directory in the container. Thankfully, Docker has an option to do this for us, by managing the database files on our local machine. Instead of binding a specific directory, Docker will mount a volume for us.
 
-**Connect to the Postgres Database**: `psql -h localhost -p 5432 -U dev_user -d dev_db`
-- `-p 5432` This flag is optional since by default psql will use port 5432.
+- If the user does not provide a volume the container will create an empty volume named mongo-volume and bind it to /db/data. Initialization scripts will be run, making the volume non-empty. This volume can be found with `docker volume ls`.
+- If the user binds an empty volume, initialization scripts will run, making the volume non-empty.
+- If the user binds a non-empty volume, no initialization scripts will run since the database state will be inside that volume.
 
-## Technical Details
-The normal "postgres" container in Docker Hub uses environment variables to initialize the database. For example, `POSTGRES_USER` determines the username of the Postgres super user.
+Therefor, the recommended procedure is to:
+1. Start the container with an empty volume, *V* (default case would be mongo-volume), bound to "/db/data" in the container. Initialization will occur and  will be used as a folder to which data is stored.
+2. In the future, when you want to use your database again, restart the container with *V* (mongo-volume) bound to "/db/data", which stores the state of your database.
 
-
-Of course, if the PGDATA data folder is non-empty (because it has been bound to a non-empty Docker volume), then these environment variables are ignored since the username of the Postgres super user will be stored in the PGDATA folder.
-
-This container presets the value of the environment variables.
-
-The normal "postgres" container also runs SQL scripts in a specific folder in the container (once again, these scripts are run only if the PGDATA folder is empty because it has not been bound to a non-empty Docker volume). This container adds a SQL script to that folder.
+You can theoretically have multiple volumes, each with different files. When you want to run a given MongoDB instance, start the container and bind it to a given volume.
