@@ -1,11 +1,10 @@
 # Easy Postgres With Docker [WIP]
 ## Quick Setup
-**It is recommended you read the entire README.** 
+**Read the entire README.** 
 
 Download the entire repository. If you intend to use only postgres, you may delete the mongo folder. If you intend to use only mongo, you may delete the postgres folder.
 
 The repo offers the following commands (on Windows use `python3 manage.py` instead of `./manage.py`).
-
 
 ## For PostgreSQL:
 
@@ -17,7 +16,7 @@ The repo offers the following commands (on Windows use `python3 manage.py` inste
 
 **Connect/Manage**:
 ```
-docker exec -it <container name, default = pg_docker> bash
+docker exec -it <container name, default = postgres_docker> bash
 // you are now inside the container
 psql -h localhost -p 5432 -U dev_user -d dev_db
 //inside psql shell
@@ -42,20 +41,22 @@ use <insert database name>
 db.auth(<username>, <password>)
 //authenticate for access privileges
 ```
-### Other Commands
-These are some extra commands if you don't want to use the defaults.
+### Extra Options
+These are some extra options if you don't want to use the defaults.
 
 Please note that these commands must be put before `build, start, stop`. 
 
 For example: `./manage.py -p 27017:27017 start mongo`.
 
-`-v` or `--volume=` to add custom volume.
+`-v` or `--volume=` to use a custom volume.
 
-`-n` or `--name=` to add custom name of container.
+`-n` or `--name=` to give the container a custom name.
 
-`-i` or `--image=` to add custom image.
+`-i` or `--image=` to use a custom image.
 
-`-p` or `--publish=` to add custom ports binding.
+`-p` or `--publish=` to use a custom port binding.
+
+If you are using these options, you should probably just use the Docker command line interface instead of our wrapper script.
 
 ## Docker Installation:
 
@@ -72,17 +73,18 @@ manage.py requires Docker to be installed. Visit the Docker website for installa
 
 ## Dockerfile/Why use Docker
 
-This Dockerfile specifies an image to which the container is built upon.
+This project has 2 Dockerfiles, one for mongo, one for postgres. Each Dockerfile specifies an image, which is built with `docker build`. Developers can use `docker run` to create a container based on an image (if the image has been built). The containers allow developers to easily use Postgres/Mongo on their local machines without having to install the databases the normal way.
 
-The resulting container lets developers easily use Postgres/Mongo on their local machines while developing without having to install Postgres/Mongo the normal way.
+The containers should not be used in production because they have hardcoded users/passwords to make setup easier and to establish convention.
 
-This container should not be used in production because it has hardcoded users/passwords to make setup easier and to establish convention.
+`manage.py` wraps the commands `docker build`, `docker run`, `docker stop` with useful defaults. But, you can always call the commands yourself.
 
 ## Usage
 
-Building the images from the Dockerfiles that we have setup makes it easier for you to use Docker. After the images are built, you can immediately start working with the databases that are created within the container.
-
-Please note that an image only has to be built once (only have to run `./manage.py build <mongo/postgres>` once).
+- Build an image with `./manage.py build <postgres/mongo>`. You only need to build an image once.
+- Create a container based on an image with `./manage.py run <postgres/mongo>`
+- Stop the container with `./manage.py stop <postgres/mongo>`
+- Connecting to a database within a container is explained at the top of the README.
 
 ### Databases
 
@@ -98,7 +100,7 @@ Both databases in this container will be initialized with the following roles/da
 
 Developers should use the user "dev_user" and the database "dev_db".
 
-Data is not persistent inside of containers. Think of a container as a template (like a class). Starting a container merely creates an instance of that class. Stopping a container deletes the instance. Thus, the state of your database must be stored inside of a Docker volume.
+Data is not persistent inside of containers. Think of an image as a template (like a class). Starting a container merely creates an instance of that image (class). Stopping a container deletes the instance. Thus, the state of your database must be stored inside of a Docker volume.
 
 ### Volumes
 
