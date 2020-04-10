@@ -17,7 +17,6 @@ start.add_argument('start_choice', choices=selection, help='Start the container'
 stop = subparsers.add_parser('stop')
 stop.add_argument('stop_choice', choices=selection, help='Stop the container')
 args = parser.parse_args()
-print(args)
 
 if which('docker') is None:
   print('ERROR: Could not find "docker" on your path.')
@@ -56,8 +55,8 @@ def start(choice):
   if args.image is None:
     args.image = f"buildumass/easy-{choice}:latest"
   if args.publish is None:
-    args.publish = "27017:27017" if choice is "mongo" else "5432:5432"
-  volume_location_in_container = "/data/db" if choice is "mongo" else "/var/lib/postgresql/data"
+    args.publish = "27017:27017" if choice == "mongo" else "5432:5432"
+  volume_location_in_container = "/data/db" if choice == "mongo" else "/var/lib/postgresql/data"
   print(f"Starting docker container with volume: {args.volume} and name: {args.name}")
   cmd = f"docker run --rm --volume {args.volume}:{volume_location_in_container} -d --name {args.name} -p {args.publish} --ip localhost {args.image}"
   easy_exec(cmd)
