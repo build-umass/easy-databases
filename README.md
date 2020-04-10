@@ -42,7 +42,7 @@ db.auth(<username>, <password>)
 //authenticate for access privileges
 ```
 ### Extra Options
-These are some extra options if you don't want to use the defaults.  
+You can override the default options that are passed to `docker build`, `docker run`, `docker stop`.  
 Use `./manage.py <build/start/start> -h` if you want auto-generated usage instructions.  
 Optional flags should come after the `build`, `start`, or `stop` command.
 
