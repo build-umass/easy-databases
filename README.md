@@ -42,8 +42,22 @@ use <insert database name>
 db.auth(<username>, <password>)
 //authenticate for access privileges
 ```
+### Other Commands
+These are some extra commands if you don't want to use the defaults.
 
-## Other/Misc:
+Please note that these commands must be put before `build, start, stop`. 
+
+For example: `./manage.py -p 27017:27017 start mongo`.
+
+`-v` or `--volume=` to add custom volume.
+
+`-n` or `--name=` to add custom name of container.
+
+`-i` or `--image=` to add custom image.
+
+`-p` or `--publish=` to add custom ports binding.
+
+## Docker Installation:
 
 manage.py requires Docker to be installed. Visit the Docker website for installation information.
 
@@ -56,7 +70,7 @@ manage.py requires Docker to be installed. Visit the Docker website for installa
 - You might need to restart the docker service/relogin your user account.
 # Summary
 
-## Top
+## Dockerfile/Why use Docker
 
 This Dockerfile specifies an image to which the container is built upon.
 
@@ -69,6 +83,8 @@ This container should not be used in production because it has hardcoded users/p
 Building the images from the Dockerfiles that we have setup makes it easier for you to use Docker. After the images are built, you can immediately start working with the databases that are created within the container.
 
 Please note that an image only has to be built once (only have to run `./manage.py build <mongo/postgres>` once).
+
+### Databases
 
 Both databases in this container will be initialized with the following roles/databases:
 - Admin
@@ -84,30 +100,16 @@ Developers should use the user "dev_user" and the database "dev_db".
 
 Data is not persistent inside of containers. Think of a container as a template (like a class). Starting a container merely creates an instance of that class. Stopping a container deletes the instance. Thus, the state of your database must be stored inside of a Docker volume.
 
-**For Postgres:**
+### Volumes
 
-In the container, Postgres uses a folder "/var/lib/postgresql/data" to store all the data that is created in this container for later use (i.e. after we stop the container, and start it again), we must have to create a location on our local machine that is able to retain such data. Hence, we have to bind a location on our local machine, to that directory in the container. Thankfully, Docker has an option to do this for us, by managing the database files on our local machine. Instead of binding a specific directory, Docker will mount a volume for us.
+In the container, Postgres uses a folder "/var/lib/postgresql/data" and Mongo uses the folder /db/data to store all the data that is created in this container for later use (i.e. after we stop the container, and start it again), we must have to create a location on our local machine that is able to retain such data. Hence, we have to bind a location on our local machine, to that directory in the container. Thankfully, Docker has an option to do this for us, by managing the database files on our local machine. Instead of binding a specific directory, Docker will mount a volume for us.
 
-- If the user does not provide a volume the container will create an empty volume named PGDATA and bind it to /var/lib/postgresql/data. Initialization scripts will be run, making the volume non-empty. This volume can be found with `docker volume ls`.
+- If the user does not provide a volume the container will create an empty volume named postgres-volume (or mongo-volume for Mongo) and bind it to /var/lib/postgresql/data (or /db/data for Mongo). Initialization scripts will be run, making the volume non-empty. This volume can be found with `docker volume ls`.
 - If the user binds an empty volume, initialization scripts will run, making the volume non-empty.
 - If the user binds a non-empty volume, no initialization scripts will run since the database state will be inside that volume.
 
-Therefor, the recommended procedure is to:
-1. Start the container with an empty volume, *V* (default case would be PGDATA), bound to "/var/lib/postgresql/data". Initialization will occur and  will be used as a folder to which data is stored.
-2. In the future, when you want to use your database again, restart the container with "/var/lib/postgresql/data" bound to *V*, which stores the state of your database.
+Therefore, the recommended procedure is to:
+1. Start the container with an empty volume, *V* (default case would be postgres-volume for postgres, and mongo-volume for mongo), bound to "/var/lib/postgresql/data" or "/db/data" for mongo. Initialization will occur and  will be used as a folder to which data is stored.
+2. In the future, when you want to use your database again, restart the container with *V* bound to "/var/lib/postgresql/data" or "/db/data" for mongo, which stores the state of your database.
 
-You can theoretically have multiple volumes, each with different files. When you want to run a given Postgres instance, start the container and bind it to a given volume.
-
-**For MongoDB:**
-
-In the container, Mongo uses a folder "/db/data" to store all the data that is created in this container for later use (i.e. after we stop the container, and start it again), we must have to create a location on our local machine that is able to retain such data. Hence, we have to bind a location on our local machine, to that directory in the container. Thankfully, Docker has an option to do this for us, by managing the database files on our local machine. Instead of binding a specific directory, Docker will mount a volume for us.
-
-- If the user does not provide a volume the container will create an empty volume named mongo-volume and bind it to /db/data. Initialization scripts will be run, making the volume non-empty. This volume can be found with `docker volume ls`.
-- If the user binds an empty volume, initialization scripts will run, making the volume non-empty.
-- If the user binds a non-empty volume, no initialization scripts will run since the database state will be inside that volume.
-
-Therefor, the recommended procedure is to:
-1. Start the container with an empty volume, *V* (default case would be mongo-volume), bound to "/db/data" in the container. Initialization will occur and  will be used as a folder to which data is stored.
-2. In the future, when you want to use your database again, restart the container with *V* (mongo-volume) bound to "/db/data", which stores the state of your database.
-
-You can theoretically have multiple volumes, each with different files. When you want to run a given MongoDB instance, start the container and bind it to a given volume.
+You can theoretically have multiple volumes, each with different files. When you want to run a given Postgres or Mongo instance, start the container and bind it to a given volume.
