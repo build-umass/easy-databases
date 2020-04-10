@@ -112,8 +112,4 @@ Therefore, the recommended procedure is to:
 1. Start the container with an empty volume, *V* (default case would be postgres-volume for postgres, and mongo-volume for mongo), bound to "/var/lib/postgresql/data" or "/db/data" for mongo. Initialization will occur and  will be used as a folder to which data is stored.
 2. In the future, when you want to use your database again, restart the container with *V* bound to "/var/lib/postgresql/data" or "/db/data" for mongo, which stores the state of your database.
 
-<<<<<<< HEAD
 You can theoretically have multiple volumes, each with different files. When you want to run a given Postgres or Mongo instance, start the container and bind it to a given volume.
-=======
-The normal "postgres" container also runs SQL scripts in a specific folder in the container (once again, these scripts are run only if the PGDATA folder is empty because it has not been bound to a non-empty Docker volume). This container adds a SQL script to that folder.
->>>>>>> origin/master
