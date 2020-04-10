@@ -6,15 +6,13 @@ Download the entire repository. If you intend to use only postgres, you may dele
 
 The repo offers the following commands (on Windows use `python3 manage.py` instead of `./manage.py`).
 
-## For PostgreSQL:
+**Build**: `./manage.py build <postgres/mongo>`
 
-**Build**: `./manage.py build postgres`
+**Run**: `./manage.py run <postgres/mongo>` 
 
-**Run**: `./manage.py run postgres` 
+**Stop**: `./manage.py stop <postgres/mongo`
 
-**Stop**: `./manage.py stop postgres`
-
-**Connect/Manage**:
+**Connect/Manage (Postgres)**:
 ```
 docker exec -it <container name, default = postgres_docker> bash
 // you are now inside the container
@@ -22,15 +20,7 @@ psql -h localhost -p 5432 -U dev_user -d dev_db
 //inside psql shell
 ```
 
-## For MongoDB:
-
-**Build**: `./manage.py build mongo`
-
-**Run**: `./manage.py run mongo` 
-
-**Stop**: `./manage.py stop mongo`
-
-**Connect/Manage**:
+**Connect/Manage (Mongo)**:
 ```
 docker exec -it <container name, default = mongo_docker> bash
 // you are now inside the container
@@ -41,11 +31,13 @@ use <insert database name>
 db.auth(<username>, <password>)
 //authenticate for access privileges
 ```
+
 ### Extra Options
-You can override the default parameters/options that are passed to `docker build`, `docker run`, `docker stop`.  
+manage.py is a wrapper script that calls `docker build`, `docker run`, and `docker stop` with helpful defaults.  
+You can override the defaults with command line flags.  
 Use `./manage.py <build/run/stop> -h` if you want auto-generated usage instructions.  
 
-Example usages:
+Example (override the default port that is passed to `docker run`):
 - `./manage.py run mongo --port 3000` (default port on host container is 27017)
 - `./manage.py run --port 3000 mongo`
 
@@ -57,7 +49,6 @@ Example usages:
 
 `-p` or `--port` to use a custom host port. (Default = 5432, 27017)
 
-If you are using these options, you should probably just use the Docker command line interface instead of our wrapper script.
 ## Docker Installation:
 
 manage.py requires Docker to be installed. Visit the Docker website for installation information.
@@ -79,13 +70,6 @@ The containers should not be used in production because they have hardcoded user
 
 `manage.py` wraps the commands `docker build`, `docker run`, `docker stop` with useful defaults. But, you can always call the commands yourself.
 
-## Usage
-
-- Build an image with `./manage.py build <postgres/mongo>`. You only need to build an image once.
-- Create a container based on an image with `./manage.py run <postgres/mongo>`
-- Stop the container with `./manage.py stop <postgres/mongo>`
-- Connecting to a database within a container is explained at the top of the README.
-
 ### Databases
 
 Both databases in this container will be initialized with the following roles/databases:
@@ -100,18 +84,20 @@ Both databases in this container will be initialized with the following roles/da
 
 Developers should use the user "dev_user" and the database "dev_db".
 
-Data is not persistent inside of containers. Think of an image as a template (like a class). Starting a container merely creates an instance of that image (class). Stopping a container deletes the instance. Thus, the state of your database must be stored inside of a Docker volume.
+Data is not persistent inside of containers. Think of an image as a template (like a class). Creating a container merely creates an instance of that image (class). Stopping a container deletes the instance. Thus, the state of your database must be stored inside of a Docker volume.
 
 ### Volumes
+[Read this](https://docs.docker.com/storage/)  
+[Read this too](https://docs.docker.com/storage/volumes/)
 
-In the container, Postgres uses a folder "/var/lib/postgresql/data" and Mongo uses the folder /db/data to store all the data that is created in this container for later use (i.e. after we stop the container, and start it again), we must have to create a location on our local machine that is able to retain such data. Hence, we have to bind a location on our local machine, to that directory in the container. Thankfully, Docker has an option to do this for us, by managing the database files on our local machine. Instead of binding a specific directory, Docker will mount a volume for us.
+Inside the container's file system, Postgres uses the folder "/var/lib/postgresql/data" and Mongo uses the folder /db/data to store all their data. Containers automatically reset after being stopped, so we need create a location on our local machine that can save the data inside the container for later use (i.e. after we stop the container and start it again). Docker allows us to do this with volumes, which bind a directory on the container to a directory on our local file system. For example, if we bound "/home/username/Desktop" on our host machine to "/var/lib/postgresql/data", then any data Postgres generates inside the container would be saved on our desktop, and any data we save on our Desktop would be readable by Postgres.
 
-- If the user does not provide a volume the container will create an empty volume named postgres-volume (or mongo-volume for Mongo) and bind it to /var/lib/postgresql/data (or /db/data for Mongo). Initialization scripts will be run, making the volume non-empty. This volume can be found with `docker volume ls`.
-- If the user binds an empty volume, initialization scripts will run, making the volume non-empty.
-- If the user binds a non-empty volume, no initialization scripts will run since the database state will be inside that volume.
+When you first run, `./manage.py run <postgres/mongo>`, we tell `docker run` to use the volume named "postgres-volume" (or "mongo-volume" for Mongo) and bind it to /var/lib/postgresql/data (or /db/data for Mongo). Since this volume does not exist, `docker run` will automatically create an empty volume with the name we give it. Since the volume is empty, initialization scripts will run, making the volume non-empty. You can find this volume with `docker volume ls` and use `docker volume inspect [some arguments]` to find the location of the volume on your local file system.
 
-Therefore, the recommended procedure is to:
-1. Start the container with an empty volume, *V* (default case would be postgres-volume for postgres, and mongo-volume for mongo), bound to "/var/lib/postgresql/data" or "/db/data" for mongo. Initialization will occur and  will be used as a folder to which data is stored.
+Afterwards, when calling `./manage.py run <postgres/mongo>`, we tell `docker run` to use the volume named "postgres-volume" (or "mongo-volume" for Mongo), but because this volume already exists, `docker run` will use it, instead of creating a new volume. Since the volume is non-empty, initialization scripts will not run.
+
+Therefore, the recommended procedure (which `./manage.py build` and `./manage.py run` do by default) is to:
+1. Create a container with an empty volume, *V* (default case would be postgres-volume for postgres, and mongo-volume for mongo), bound to "/var/lib/postgresql/data" or "/db/data" for mongo. Initialization will occur and the volume will be used to store data.
 2. In the future, when you want to use your database again, restart the container with *V* bound to "/var/lib/postgresql/data" or "/db/data" for mongo, which stores the state of your database.
 
 You can theoretically have multiple volumes, each with different files. When you want to run a given Postgres or Mongo instance, start the container and bind it to a given volume.
