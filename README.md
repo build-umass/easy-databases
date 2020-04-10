@@ -1,4 +1,4 @@
-# Easy Postgres With Docker [WIP]
+# Easy Databases With Docker
 ## Quick Setup
 **Read the entire README.** 
 
