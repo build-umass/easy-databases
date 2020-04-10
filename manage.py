@@ -55,6 +55,7 @@ def start(choice):
   if args.image is None:
     args.image = f"buildumass/easy-{choice}:latest"
   if args.publish is None:
+    # https://docs.docker.com/engine/reference/run/#expose-incoming-ports
     args.publish = "27017:27017" if choice == "mongo" else "5432:5432"
   volume_location_in_container = "/data/db" if choice == "mongo" else "/var/lib/postgresql/data"
   print(f"Starting docker container with volume: {args.volume} and name: {args.name}")
