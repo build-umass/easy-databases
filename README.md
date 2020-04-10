@@ -54,7 +54,7 @@ For example: `./manage.py -p 27017:27017 start mongo`.
 
 `-i` or `--image=` to use a custom image.
 
-`-p` or `--publish=` to use a custom port binding.
+`-p` or `--port=` to use a custom host port.
 
 If you are using these options, you should probably just use the Docker command line interface instead of our wrapper script.
 

@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--volume=', action='store', dest='volume', help='The Docker volume should be bound to', default=None)
 parser.add_argument('-n', '--name=', action='store', dest='name', help='The name of the Docker container', default=None)
 parser.add_argument('-i', '--image=', action='store', dest='image', help='The image for instantiating the Docker container.', default=None)
-parser.add_argument('-p', '--publish=', action='store', dest='publish', help='Publish a container\'s ports or range of ports to host.', default=None)
+parser.add_argument('-p', '--port=', action='store', dest='port', help='The port on the host machine which is mapped to the database port inside the container.', default=None)
 subparsers = parser.add_subparsers(dest = 'sub')
 build = subparsers.add_parser('build')
 selection = ['mongo','postgres']
@@ -54,12 +54,15 @@ def start(choice):
     args.volume = f"{choice}_volume"
   if args.image is None:
     args.image = f"buildumass/easy-{choice}:latest"
-  if args.publish is None:
-    # https://docs.docker.com/engine/reference/run/#expose-incoming-ports
-    args.publish = "27017:27017" if choice == "mongo" else "5432:5432"
+  is_mongo = choice == "mongo"
+  # https://docs.docker.com/engine/reference/run/#expose-incoming-ports
+  container_port = "27017" if is_mongo else "5432"
+  if args.port is None:
+    args.port = "27017" if is_mongo else "5432"
+  port_binding = f"{args.port}:{container_port}"
   volume_location_in_container = "/data/db" if choice == "mongo" else "/var/lib/postgresql/data"
   print(f"Starting docker container with volume: {args.volume} and name: {args.name}")
-  cmd = f"docker run --rm --volume {args.volume}:{volume_location_in_container} -d --name {args.name} -p {args.publish} --ip localhost {args.image}"
+  cmd = f"docker run --rm --volume {args.volume}:{volume_location_in_container} -d --name {args.name} --publish {port_binding} --ip localhost {args.image}"
   easy_exec(cmd)
 
 def stop(choice):
