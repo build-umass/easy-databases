@@ -20,9 +20,9 @@ selection = ['mongo','postgres']
 build = subparsers.add_parser('build')
 build.add_argument('build_choice', choices=selection, help='Which image to build')
 
-start = subparsers.add_parser('start')
-start.add_argument('start_choice', choices=selection, help='Which container to start')
-add_flags(start, 'volume', 'image', 'name', 'port')
+run = subparsers.add_parser('run')
+run.add_argument('run_choice', choices=selection, help='Which image to use to create a container')
+add_flags(run, 'volume', 'image', 'name', 'port')
 
 stop = subparsers.add_parser('stop')
 stop.add_argument('stop_choice', choices=selection, help='Which container to stop')
@@ -67,7 +67,7 @@ def start(choice):
     args.port = "27017" if is_mongo else "5432"
   port_binding = f"{args.port}:{container_port}"
   volume_location_in_container = "/data/db" if choice == "mongo" else "/var/lib/postgresql/data"
-  print(f"Starting docker container with volume: {args.volume} and name: {args.name}")
+  print(f"Creating a docker container with name: {args.name} and attaching volume: {args.volume}")
   cmd = f"docker run --rm --volume {args.volume}:{volume_location_in_container} -d --name {args.name} --publish {port_binding} --ip localhost {args.image}"
   easy_exec(cmd)
 
@@ -80,7 +80,7 @@ def stop(choice):
 
 if args.command == 'build':
   build_image(args.build_choice)
-elif args.command == 'start':
-  start(args.start_choice)
+elif args.command == 'run':
+  start(args.run_choice)
 elif args.command == 'stop':
   stop(args.stop_choice)

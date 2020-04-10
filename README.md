@@ -10,7 +10,7 @@ The repo offers the following commands (on Windows use `python3 manage.py` inste
 
 **Build**: `./manage.py build postgres`
 
-**Start**: `./manage.py start postgres` 
+**Run**: `./manage.py run postgres` 
 
 **Stop**: `./manage.py stop postgres`
 
@@ -26,7 +26,7 @@ psql -h localhost -p 5432 -U dev_user -d dev_db
 
 **Build**: `./manage.py build mongo`
 
-**Start**: `./manage.py start mongo` 
+**Run**: `./manage.py run mongo` 
 
 **Stop**: `./manage.py stop mongo`
 
@@ -42,13 +42,12 @@ db.auth(<username>, <password>)
 //authenticate for access privileges
 ```
 ### Extra Options
-You can override the default options that are passed to `docker build`, `docker run`, `docker stop`.  
-Use `./manage.py <build/start/start> -h` if you want auto-generated usage instructions.  
-Optional flags should come after the `build`, `start`, or `stop` command.
+You can override the default parameters/options that are passed to `docker build`, `docker run`, `docker stop`.  
+Use `./manage.py <build/run/stop> -h` if you want auto-generated usage instructions.  
 
 Example usages:
-- `./manage.py start mongo --port 3000` (default port on host container is 27017)
-- `./manage.py start --port 3000 mongo`
+- `./manage.py run mongo --port 3000` (default port on host container is 27017)
+- `./manage.py run --port 3000 mongo`
 
 `-v` or `--volume` to use a custom volume. (Default = postgres_volume, mongo_volume)
 
