@@ -3,19 +3,31 @@ from shutil import which
 import argparse
 import subprocess
 
+def add_flags(parser, *flags):
+  if 'volume' in flags:
+    parser.add_argument('-v', '--volume', action='store', dest='volume', help='The Docker volume should be bound to', default=None)
+  if 'image' in flags:
+    parser.add_argument('-i', '--image', action='store', dest='image', help='The image for instantiating the Docker container.', default=None)
+  if 'name' in flags:
+    parser.add_argument('-n', '--name', action='store', dest='name', help='The name of the Docker container', default=None)
+  if 'port' in flags:
+    parser.add_argument('-p', '--port', action='store', dest='port', help='The port on the host machine which is mapped to the database port inside the container.', default=None)
+
 parser = argparse.ArgumentParser()
-parser.add_argument('-v', '--volume=', action='store', dest='volume', help='The Docker volume should be bound to', default=None)
-parser.add_argument('-n', '--name=', action='store', dest='name', help='The name of the Docker container', default=None)
-parser.add_argument('-i', '--image=', action='store', dest='image', help='The image for instantiating the Docker container.', default=None)
-parser.add_argument('-p', '--port=', action='store', dest='port', help='The port on the host machine which is mapped to the database port inside the container.', default=None)
-subparsers = parser.add_subparsers(dest = 'sub')
-build = subparsers.add_parser('build')
+subparsers = parser.add_subparsers(dest = 'command')
 selection = ['mongo','postgres']
-build.add_argument('build_choice', choices=selection, help='Building the image')
+
+build = subparsers.add_parser('build')
+build.add_argument('build_choice', choices=selection, help='Which image to build')
+
 start = subparsers.add_parser('start')
-start.add_argument('start_choice', choices=selection, help='Start the container')
+start.add_argument('start_choice', choices=selection, help='Which container to start')
+add_flags(start, 'volume', 'image', 'name', 'port')
+
 stop = subparsers.add_parser('stop')
-stop.add_argument('stop_choice', choices=selection, help='Stop the container')
+stop.add_argument('stop_choice', choices=selection, help='Which container to stop')
+add_flags(stop, 'name')
+
 args = parser.parse_args()
 
 if which('docker') is None:
@@ -38,12 +50,6 @@ def easy_exec(cmd):
 def build_image(location):
   image_tag = f"buildumass/easy-{location}:latest"
   print(f"Building image with tag: {image_tag}")
-  if args.name:
-    print("Warning: irrelevant flag -n/--name")
-  if args.volume:
-    print("Warning: irrevlant flag -v/--volume")
-  if args.image:
-    print("warning: irrelevant flag -i/--image")
   cmd = f"docker build -t {image_tag} ./{location}"
   easy_exec(cmd)
 
@@ -69,16 +75,12 @@ def stop(choice):
   if args.name is None:
     args.name = f"{choice}_docker"
   print(f"Stopping docker container with name {args.name}")
-  if args.volume:
-    print("Warning: irrelevant flag -v/--volume")
-  if args.image:
-    print("Warning: irrelevant flag -i/--image")
   cmd = f"docker stop {args.name}"
   easy_exec(cmd)
 
-if args.sub == 'build':
+if args.command == 'build':
   build_image(args.build_choice)
-elif args.sub == 'start':
+elif args.command == 'start':
   start(args.start_choice)
-elif args.sub == 'stop':
+elif args.command == 'stop':
   stop(args.stop_choice)

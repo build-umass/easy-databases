@@ -42,22 +42,23 @@ db.auth(<username>, <password>)
 //authenticate for access privileges
 ```
 ### Extra Options
-These are some extra options if you don't want to use the defaults.
+These are some extra options if you don't want to use the defaults.  
+Use `./manage.py <build/start/start> -h` if you want auto-generated usage instructions.  
+Optional flags should come after the `build`, `start`, or `stop` command.
 
-Please note that these commands must be put before `build, start, stop`. 
+Example usages: 
+- `./manage.py start mongo --port 3000` (default port on host container is 27017)
+- `./manage.py start --port 3000 mongo`
 
-For example: `./manage.py -p 27017:27017 start mongo`.
+`-v` or `--volume` to use a custom volume.
 
-`-v` or `--volume=` to use a custom volume.
+`-n` or `--name` to give the container a custom name.
 
-`-n` or `--name=` to give the container a custom name.
+`-i` or `--image` to use a custom image.
 
-`-i` or `--image=` to use a custom image.
-
-`-p` or `--port=` to use a custom host port.
+`-p` or `--port` to use a custom host port.
 
 If you are using these options, you should probably just use the Docker command line interface instead of our wrapper script.
-
 ## Docker Installation:
 
 manage.py requires Docker to be installed. Visit the Docker website for installation information.
