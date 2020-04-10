@@ -46,17 +46,17 @@ These are some extra options if you don't want to use the defaults.
 Use `./manage.py <build/start/start> -h` if you want auto-generated usage instructions.  
 Optional flags should come after the `build`, `start`, or `stop` command.
 
-Example usages: 
+Example usages:
 - `./manage.py start mongo --port 3000` (default port on host container is 27017)
 - `./manage.py start --port 3000 mongo`
 
-`-v` or `--volume` to use a custom volume.
+`-v` or `--volume` to use a custom volume. (Default = postgres_volume, mongo_volume)
 
-`-n` or `--name` to give the container a custom name.
+`-n` or `--name` to give the container a custom name. (Default = postgres_docker, mongo_docker)
 
-`-i` or `--image` to use a custom image.
+`-i` or `--image` to use a custom image. (Default = buildumass/easy-postgres, buildumass/easy-docker)
 
-`-p` or `--port` to use a custom host port.
+`-p` or `--port` to use a custom host port. (Default = 5432, 27017)
 
 If you are using these options, you should probably just use the Docker command line interface instead of our wrapper script.
 ## Docker Installation:
