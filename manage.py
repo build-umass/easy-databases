@@ -9,9 +9,9 @@ def add_flags(parser, *flags):
   if 'image' in flags:
     parser.add_argument('-i', '--image', action='store', dest='image', help='The image for instantiating the Docker container.', default=None)
   if 'name' in flags:
-    parser.add_argument('-n', '--name', action='store', dest='name', help='The name of the Docker container', default=None)
+    parser.add_argument('-n', '--name', action='store', dest='name', help='The name to instantiate the Docker container with.', default=None)
   if 'port' in flags:
-    parser.add_argument('-p', '--port', action='store', dest='port', help='The port on the host machine which is mapped to the database port inside the container.', default=None)
+    parser.add_argument('-p', '--port', action='store', dest='port', help='The port on the host machine which will be mapped to the database port inside the container.', default=None)
 
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers(dest = 'command')
